@@ -135,11 +135,15 @@ def app():
 
         # Add RSS feed refresh section
         add_rss_feed_refresh(lancedb_manager, blog_feeds=aws_blog_feeds)
-
+        if "total_records" not in st.session_state:
+            st.session_state.total_records = lancedb_manager.get_total_records()
         with st.sidebar:
-            st.subheader("**Configuration**")
-            st.markdown(f"**Embedding Model:**`{embedding_model_name}`")
-            st.markdown(f"**LLM:** `{llm_model_name}`")
+            st.subheader("**Settings**")
+            st.markdown(f"Embedding Model: **{st.session_state.embedding_model_name}**")
+            st.markdown(f"LLM: **`{llm_model_name}`**")
+            st.markdown("---")
+            st.subheader("**Records in VectorDB**")
+            st.markdown(f"Total chunks: **{st.session_state.total_records}**")
 
 
 if __name__ == "__main__":
