@@ -81,7 +81,7 @@ class LanceDBManager:
                 schema=self.model_class.to_arrow_schema(),
                 mode="overwrite",
             )
-            logger.debug(f"Creating full-text-search index on 'text' column...")
+            logger.debug("Creating full-text-search index on 'text' column...")
             self.table.create_fts_index("text", replace=True)
         else:
             self.table = self.db.open_table(self.table_name)

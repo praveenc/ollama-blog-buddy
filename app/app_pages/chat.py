@@ -134,8 +134,6 @@ if prompt := st.chat_input():
 #     return context_string
 
 
-
-
 # add custom session_state items
 logger.info(st.session_state)
 # for k, v in st.session_state.items():
@@ -159,4 +157,3 @@ logger.info(st.session_state)
 #     st.markdown("---")
 #     st.subheader("**Records in DB**")
 #     st.markdown(f"**{total_records}**")
-

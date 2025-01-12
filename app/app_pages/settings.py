@@ -3,6 +3,8 @@ from loguru import logger
 from pathlib import Path
 import ollama
 from datetime import datetime
+import toml
+
 
 # function to store widget state
 def store_widget_state(key):
@@ -26,7 +28,7 @@ with st.expander("🤖 Model Configuration", expanded=True):
         horizontal=True,
         on_change=store_widget_state,
         args=["model_backend"],
-        captions=["Local inference", "Cloud API", "Cloud API"]
+        captions=["Local inference", "Cloud API", "Cloud API"],
     )
 
     st.markdown("---")
@@ -34,7 +36,7 @@ with st.expander("🤖 Model Configuration", expanded=True):
     # Model Selection
     if model_backend == "Ollama":
         ollama_models = [model.model for model in ollama.list()["models"]]
-        
+
         col1, col2 = st.columns(2)
         with col1:
             st.markdown("### 🔤 Embedding Model")
@@ -46,10 +48,12 @@ with st.expander("🤖 Model Configuration", expanded=True):
                 on_change=store_widget_state,
                 args=["embedding_model_name"],
             )
-            
+
             # Show current selection
-            if 'embedding_model_name' in st.session_state:
-                st.caption(f"Currently selected: `{st.session_state.embedding_model_name}`")
+            if "embedding_model_name" in st.session_state:
+                st.caption(
+                    f"Currently selected: `{st.session_state.embedding_model_name}`"
+                )
 
         with col2:
             st.markdown("### 💭 Chat Model")
@@ -61,17 +65,93 @@ with st.expander("🤖 Model Configuration", expanded=True):
                 on_change=store_widget_state,
                 args=["llm_model_name"],
             )
-            
+
             # Show current selection
-            if 'llm_model_name' in st.session_state:
+            if "llm_model_name" in st.session_state:
                 st.caption(f"Currently selected: `{st.session_state.llm_model_name}`")
     else:
-        st.error("🚧 Other backends are not implemented yet. Please select Ollama as model backend.")
+        st.error(
+            "🚧 Other backends are not implemented yet. Please select Ollama as model backend."
+        )
+
+# Add this new section in the settings page after the Storage Configuration expander
+with st.expander("🔑 API Configuration", expanded=True):
+    st.markdown("### API Keys")
+
+    # Function to safely read/write secrets
+    def manage_secrets(api_key: str) -> bool:
+        """Manage secrets.toml file for API keys"""
+        try:
+            # Create .streamlit directory in project root
+            secrets_path = Path(".streamlit")
+            secrets_path.mkdir(exist_ok=True)
+            secrets_file = secrets_path / "secrets.toml"
+
+            # Read existing secrets if file exists
+            if secrets_file.exists():
+                secrets = toml.load(secrets_file)
+            else:
+                secrets = {}
+
+            # Update secrets
+            secrets["TAVILY_API_KEY"] = api_key
+
+            # Write updated secrets
+            with open(secrets_file, "w") as f:
+                toml.dump(secrets, f)
+
+            return True
+        except Exception as e:
+            st.error(f"Failed to save API key: {str(e)}")
+            return False
+
+    # Get current API key if it exists
+    current_key = st.secrets.get("TAVILY_API_KEY", "")
+
+    # Create columns for API key input
+    key_col1, key_col2 = st.columns([3, 1])
+
+    with key_col1:
+        tavily_key = st.text_input(
+            "Tavily API Key",
+            value=current_key,
+            type="password",
+            key="_tavily_api_key",
+            help="Enter your Tavily API key for web search functionality",
+            placeholder="tvly-xxxxxxxxxxxx",
+        )
+
+    with key_col2:
+        if st.button("Save API Key", type="primary"):
+            if tavily_key:
+                if manage_secrets(tavily_key):
+                    st.success("✅ API key saved successfully!")
+                    st.toast("API key updated!", icon="✅")
+                    # Note: The server needs to be restarted for changes to take effect
+                    st.info(
+                        "Please restart the Streamlit server for changes to take effect"
+                    )
+            else:
+                st.warning("⚠️ Please enter an API key")
+
+    # Add information about getting an API key
+    st.markdown("""
+    ℹ️ **Need a Tavily API key?**
+    1. Sign up at [Tavily AI](https://tavily.com)
+    2. Navigate to your dashboard
+    3. Copy your API key and paste it here
+    
+    Note: The API key will be stored in `.streamlit/secrets.toml`. Make sure to add this file to your `.gitignore`!
+    """)
+
+    if Path(".streamlit/secrets.toml").exists():
+        st.success("✅ Secrets file exists at `.streamlit/secrets.toml`")
+
 
 # Storage Settings Section
 with st.expander("💾 Storage Configuration", expanded=True):
     st.markdown("### Database Paths")
-    
+
     # DuckDB Configuration
     duckdb_path = Path("./duckdb").absolute()
     st.markdown("#### DuckDB Path")
@@ -83,7 +163,7 @@ with st.expander("💾 Storage Configuration", expanded=True):
         on_change=store_widget_state,
         args=["duckdb_path"],
     )
-    
+
     # LanceDB Configuration
     vectorstore_path = Path("./lancedb").absolute()
     st.markdown("#### VectorStore Path")
@@ -107,21 +187,23 @@ with save_col2:
     if st.button("💾 Save Settings", type="primary", use_container_width=True):
         # Create success message placeholder
         success_placeholder = st.empty()
-        
+
         # Show success message with spinner
         with st.spinner("Saving settings..."):
             # Log settings
             logger.debug(f"Selected llm Model: {st.session_state.llm_model_name}")
-            logger.debug(f"Selected embedding Model: {st.session_state.embedding_model_name}")
+            logger.debug(
+                f"Selected embedding Model: {st.session_state.embedding_model_name}"
+            )
             logger.debug(f"Selected model backend: {st.session_state._model_backend}")
-            
+
             # Show success messages
             st.toast("Settings saved successfully!", icon="✅")
             success_placeholder.success("✅ Settings saved successfully!")
-        
+
         # Show navigation hint
         st.info("👈 Navigate to Chat from the sidebar to start chatting")
-        
+
 
 # Add footer
 st.markdown("---")

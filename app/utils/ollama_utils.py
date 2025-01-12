@@ -81,7 +81,6 @@ def get_available_ollama_models(filter: Optional[str] = None) -> List[str]:
 def create_longcontext_model(
     base_model_id: str = "llama3.2", context_length: str = "8k"
 ):
-
     if context_length == "8k":
         num_ctx = 8192
     elif context_length == "4k":

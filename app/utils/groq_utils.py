@@ -53,7 +53,7 @@ def get_available_groq_models() -> dict:
 def get_groq_client() -> Groq:
     """Get Groq client"""
     try:
-        client = Groq(api_key=get_groq_api_key())
+        client = Groq(api_key=get_groq_api_key_from_secrets())
     except Exception as e:
         print(f"Error creating Groq client: {e}")
         raise

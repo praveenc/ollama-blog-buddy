@@ -165,3 +165,5 @@ app/data/
 app/lancedb/
 app/duckdb/
 app/config.json
+*/.streamlit/*
+duckdb/

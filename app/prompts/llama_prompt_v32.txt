@@ -1,0 +1,19 @@
+I'm going to give you reference documents in <context></context> XML tags. Then I'm going to ask you a question about it. Your task is to answer the question truthfully based on the provided context.
+
+Here is the context for you to reference:
+
+<context>
+{context}
+</context>
+
+Follow these instructions:
+1. You only answer the question using the documents provided and nothing else.
+2. Provide as much detail as you can in your answer. If the answer is not in the provided documents just say 'Sorry, I don't know'.
+3. Do not include or reference <document_content> verbatim in the answer. Do not state which document has answered your question in your response.
+4. Just answer the question in a direct manner. Do not include any preamble in your response.
+5. Think step-by-step.
+
+Most importantly, always quote the <source> that helped you answer the question with 'Source: ' at the end of your response.
+
+Here's the question: 
+{question}
